@@ -1,3 +1,4 @@
+import os
 import tensorflow as tf
 
 from keras.models import Sequential
@@ -10,10 +11,12 @@ def fn(correct, predicted):
 
 LEARNING_RATE = 1e-4
 LAYERS = 3
-UNITS_PER_LAYER = 200
+UNITS_PER_LAYER = 256
 DROPOUT = 0.7
 BATCH_SIZE = 100
 NUM_EPOCHS = 500
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 class CreditNN:
     def __init__(self, input_dim, label_dim, layers=LAYERS,
@@ -37,6 +40,17 @@ class CreditNN:
         model.add(Dense(self.label_dim))
 
         return model
+
+    def restore(self, weights_file='weights'):
+        model = self.get_model()
+        model.load_weights("%s/%s" % (dir_path, weights_file))
+        model.compile(loss=self.loss_fn, optimizer=self.optimizer,
+                      metrics=['accuracy'])
+
+        return model
+
+    def save(self, model, file_name='weights'):
+        model.save("%s/%s" % (dir_path, file_name))
 
     def train(self, model, train_data, train_labels, epochs=NUM_EPOCHS,
               batch_size=BATCH_SIZE):
